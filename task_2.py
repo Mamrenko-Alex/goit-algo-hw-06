@@ -22,7 +22,6 @@ def bfs(graph, start):
             queue.extend(graph[node])
     return visited
 
-# Перетворимо graph у формат adjacency list для алгоритмів
 graph_dict = nx.to_dict_of_lists(G)
 
 print("DFS:", dfs(graph_dict, "Pokrovska"))
