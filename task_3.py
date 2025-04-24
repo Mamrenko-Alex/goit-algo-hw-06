@@ -1,44 +1,44 @@
-import networkx as nx
-import matplotlib.pyplot as plt
+graph = {
+    "Pokrovska": {"Prospekt Svobody": 1000, "Parus": 1800},
+    "Prospekt Svobody": {"Pokrovska": 1000, "Zavodska": 1300},
+    "Zavodska": {"Prospekt Svobody": 1300, "Metalurgiv": 1100},
+    "Metalurgiv": {"Zavodska": 1100, "Metrobudivnykiv": 900},
+    "Metrobudivnykiv": {"Metalurgiv": 900, "Vokzalna": 1200},
+    "Vokzalna": {"Metrobudivnykiv": 1200, "Zaliznychnyy vokzal": 300, "Teatralna": 900},
+    "Zaliznychnyy vokzal": {"Vokzalna": 300},
+    "Parus": {"Pokrovska": 1800},
+    "Teatralna": {"Vokzalna": 900, "Centralna": 600},
+    "Centralna": {"Teatralna": 600, "Muzejna": 700},
+    "Muzejna": {"Centralna": 700, "Dnipro": 800},
+    "Dnipro": {"Muzejna": 800}
+}
 
-# Додаємо ваги до графа, а саме відстань між станціями
-weighted_connections = [
-    ("Pokrovska", "Prospekt Svobody", 1000),
-    ("Prospekt Svobody", "Zavodska", 1300),
-    ("Zavodska", "Metalurgiv", 1100),
-    ("Metalurgiv", "Metrobudivnykiv", 900),
-    ("Metrobudivnykiv", "Vokzalna", 1200),
-    ("Vokzalna", "Zaliznychnyy vokzal", 300),
-    ("Parus", "Pokrovska", 1800),
-    ("Vokzalna", "Teatralna", 900),
-    ("Teatralna", "Centralna", 600),
-    ("Centralna", "Muzejna", 700),
-    ("Muzejna", "Dnipro", 800),
-]
+def dijkstra(graph, start):
+    distances = {vertex: float('infinity') for vertex in graph}
+    distances[start] = 0
+    unvisited = list(graph.keys())
+    visited = []
 
-G = nx.Graph()
-G.add_weighted_edges_from(weighted_connections)
+    while unvisited:
+        current_vertex = min(unvisited, key=lambda vertex: distances[vertex])
 
-for u, v, weight in weighted_connections:
-    G.add_edge(u, v, weight=weight)
+        if distances[current_vertex] == float('infinity'):
+            break
 
-# Знаходження найкоротших шляхів
-shortest_paths = dict(nx.all_pairs_dijkstra_path_length(G, weight='weight'))
+        for neighbor, weight in graph[current_vertex].items():
+            distance = distances[current_vertex] + weight
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
 
-print("Найкоротші шляхи між усіма вершинами (в метрах):")
-for source, paths in shortest_paths.items():
-    for target, distance in paths.items():
-        print(f"Від {source} до {target}: {distance} м")
+        visited.append(current_vertex)
+        unvisited.remove(current_vertex)
 
-plt.figure(figsize=(10, 8))
-pos = nx.spring_layout(G)
+    return distances
 
-nx.draw_networkx_edges(G, pos, edgelist=weighted_connections, edge_color='red', width=2)
-nx.draw_networkx_nodes(G, pos, node_color='skyblue', node_size=2000)
-nx.draw_networkx_labels(G, pos, font_size=15, font_weight='bold')
+print("Найкоротші шляхи між усіма вершинами (в метрах):\n")
 
-edge_labels = {(u, v): f"{w} м" for u, v, w in weighted_connections}
-nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=10)
-
-plt.title("Dnipro Metro Graph with Weights", fontsize=16)
-plt.show()
+for start in graph.keys():
+    distances = dijkstra(graph, start)
+    for end, dist in distances.items():
+        print(f"Від {start} до {end}: {dist} м")
+    print("-" * 40)
